@@ -101,8 +101,31 @@ fi
 # Step 4: Create or get D1 database
 print_status "Setting up D1 database..."
 
+# Check if jq is installed for JSON parsing
+if ! command -v jq &> /dev/null; then
+    if [ "$IS_CI" = true ]; then
+        print_warning "jq not installed. Installing..."
+        if command -v apt-get &> /dev/null; then
+            apt-get update && apt-get install -y jq
+        elif command -v yum &> /dev/null; then
+            yum install -y jq
+        elif command -v apk &> /dev/null; then
+            apk add jq
+        else
+            print_warning "Cannot install jq automatically. Using grep fallback."
+        fi
+    else
+        print_warning "jq not installed. Using grep fallback for database detection."
+    fi
+fi
+
 # Check if database already exists
-DB_EXISTS=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name == "videohub_db") | .uuid' 2>/dev/null || true)
+if command -v jq &> /dev/null; then
+    DB_EXISTS=$(wrangler d1 list --json 2>/dev/null | jq -r '.[] | select(.name == "videohub_db") | .uuid' 2>/dev/null || true)
+else
+    # Fallback using grep
+    DB_EXISTS=$(wrangler d1 list 2>/dev/null | grep -A5 "videohub_db" | grep -o 'uuid: [a-f0-9-]*' | cut -d' ' -f2 || true)
+fi
 
 if [ -n "$DB_EXISTS" ]; then
     print_status "Existing D1 database found: $DB_EXISTS"
