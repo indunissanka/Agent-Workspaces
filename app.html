@@ -30,10 +30,7 @@
     <main class="container">
         <div class="filters"></div>
 
-        <div id="continueWatching" class="continue-watching" style="display: none;">
-            <h2>Continue Watching</h2>
-            <div id="continueGrid" class="continue-grid"></div>
-        </div>
+
 
         <div id="videoGrid" class="video-grid">
         </div>
@@ -77,8 +74,6 @@
 
             // DOM elements
             elements: {
-                continueWatchingContainer: null,
-                continueWatchingGrid: null,
                 videoGrid: null,
                 modal: null,
                 videoPlayer: null,
@@ -106,8 +101,6 @@
 
             // Cache DOM elements for performance
             cacheDOMElements() {
-                this.elements.continueWatchingContainer = document.getElementById('continueWatching');
-                this.elements.continueWatchingGrid = document.getElementById('continueGrid');
                 this.elements.videoGrid = document.getElementById('videoGrid');
                 this.elements.modal = document.getElementById('videoModal');
                 this.elements.videoPlayer = document.getElementById('videoPlayer');
@@ -142,7 +135,6 @@
             // Render all components
             render() {
                 this.renderCategories();
-                this.renderContinueWatching();
                 this.renderVideos();
             },
 
@@ -201,34 +193,6 @@
                 });
             },
 
-            // Render the "Continue Watching" section
-            renderContinueWatching() {
-                const inProgressVideos = this.state.videos.filter(video => {
-                    const history = this.state.watchHistory[video.id];
-                    if (!history) return false;
-                    const totalSeconds = this.parseDuration(video.duration);
-                    const progress = totalSeconds > 0 ? (history.watchedSeconds / totalSeconds) * 100 : 0;
-                    return progress > 0 && progress < 95;
-                }).sort((a, b) => {
-                    return (this.state.watchHistory[b.id]?.lastWatched || 0) - (this.state.watchHistory[a.id]?.lastWatched || 0);
-                }).slice(0, 5);
-
-                if (inProgressVideos.length === 0) {
-                    this.elements.continueWatchingContainer.style.display = 'none';
-                    return;
-                }
-
-                this.elements.continueWatchingContainer.style.display = 'block';
-                this.elements.continueWatchingGrid.innerHTML = '';
-
-                inProgressVideos.forEach(video => {
-                    const progress = this.getWatchProgress(video.id, video.duration);
-                    const history = this.state.watchHistory[video.id];
-                    const videoCard = this.createVideoCard(video, true, progress, history);
-                    this.elements.continueWatchingGrid.appendChild(videoCard);
-                });
-            },
-
             // Render the main video grid
             renderVideos() {
                 let filteredVideos = this.state.videos;
@@ -244,7 +208,6 @@
                         video.channel.toLowerCase().includes(query)
                     );
                 }
-                console.log('Filtered videos to render:', filteredVideos); // Diagnostic log
 
                 this.elements.videoGrid.innerHTML = '';
                 filteredVideos.forEach(video => {
