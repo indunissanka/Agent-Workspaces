@@ -713,15 +713,22 @@
                     <h2>⚙️ General Settings</h2>
                 </div>
                 <div class="section-body">
-                    <form id="generalSettingsForm">
-                        <div class="form-group">
-                            <label for="siteTitleInput">Site Title (Logo Text)</label>
-                            <input type="text" class="form-control" id="siteTitleInput" placeholder="Enter site title" value="VideoHub">
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">💾 Save Settings</button>
-                        </div>
-                    </form>
+                        <form id="generalSettingsForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="siteTitleInput">Site Title (Logo Text)</label>
+                                    <input type="text" class="form-control" id="siteTitleInput" placeholder="Enter site title" value="VideoHub">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logoHeightInput">Logo Height (px)</label>
+                                    <input type="number" class="form-control" id="logoHeightInput" min="16" max="40" step="1" placeholder="24" value="24">
+                                    <p class="helper-text">Adjusts the logo size on the main site.</p>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                            </div>
+                        </form>
                 </div>
             </div>
         </div>
@@ -810,28 +817,57 @@
             updateStats();
         }
 
+        function updateAdminBrand(titleText) {
+            const navBrand = document.querySelector('.nav-brand');
+            if (!navBrand) return;
+            navBrand.textContent = '';
+            navBrand.appendChild(document.createTextNode('🎬 '));
+            const span = document.createElement('span');
+            span.textContent = titleText || 'VideoHub';
+            navBrand.appendChild(span);
+            navBrand.appendChild(document.createTextNode(' Admin'));
+        }
+
         // --- General Settings Functions ---
         function loadSettings() {
             const siteTitle = localStorage.getItem('siteTitle');
+            const logoHeight = localStorage.getItem('logoHeight');
+
             if (siteTitle) {
                 document.getElementById('siteTitleInput').value = siteTitle;
             }
+            if (logoHeight) {
+                document.getElementById('logoHeightInput').value = logoHeight;
+                document.documentElement.style.setProperty('--logo-height', `${logoHeight}px`);
+            }
+
             // Update the logo in the admin nav as well
-            document.querySelector('.nav-brand h1').textContent = siteTitle || 'VideoHub Admin';
+            updateAdminBrand(siteTitle);
         }
 
         function saveSettings() {
             const siteTitleInput = document.getElementById('siteTitleInput');
+            const logoHeightInput = document.getElementById('logoHeightInput');
             const newSiteTitle = siteTitleInput.value.trim();
+            const newLogoHeight = Number.parseInt(logoHeightInput.value, 10);
 
-            if (newSiteTitle) {
-                localStorage.setItem('siteTitle', newSiteTitle);
-                showToast('Settings saved successfully!', 'success');
-                // Update the logo in the admin nav immediately
-                document.querySelector('.nav-brand h1').textContent = newSiteTitle;
-            } else {
+            if (!newSiteTitle) {
                 showToast('Site title cannot be empty.', 'error');
+                return;
             }
+
+            if (Number.isNaN(newLogoHeight) || newLogoHeight < 16 || newLogoHeight > 40) {
+                showToast('Logo height must be between 16 and 40.', 'error');
+                return;
+            }
+
+            localStorage.setItem('siteTitle', newSiteTitle);
+            localStorage.setItem('logoHeight', String(newLogoHeight));
+            document.documentElement.style.setProperty('--logo-height', `${newLogoHeight}px`);
+            showToast('Settings saved successfully!', 'success');
+
+            // Update the logo in the admin nav immediately
+            updateAdminBrand(newSiteTitle);
         }
         // --- End General Settings Functions ---
 
@@ -864,30 +900,6 @@
             ];
         }
 
-        // --- General Settings Functions ---
-        function loadSettings() {
-            const siteTitle = localStorage.getItem('siteTitle');
-            if (siteTitle) {
-                document.getElementById('siteTitleInput').value = siteTitle;
-            }
-            // Update the logo in the admin nav as well
-            document.querySelector('.nav-brand h1').textContent = siteTitle || 'VideoHub Admin';
-        }
-
-        function saveSettings() {
-            const siteTitleInput = document.getElementById('siteTitleInput');
-            const newSiteTitle = siteTitleInput.value.trim();
-
-            if (newSiteTitle) {
-                localStorage.setItem('siteTitle', newSiteTitle);
-                showToast('Settings saved successfully!', 'success');
-                // Update the logo in the admin nav immediately
-                document.querySelector('.nav-brand h1').textContent = newSiteTitle;
-            } else {
-                showToast('Site title cannot be empty.', 'error');
-            }
-        }
-        // --- End General Settings Functions ---
 
         function saveVideos() {
             localStorage.setItem('videos', JSON.stringify(videos));

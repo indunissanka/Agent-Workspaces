@@ -100,6 +100,10 @@
                 if (savedSiteTitle) {
                     this.state.siteTitle = savedSiteTitle;
                 }
+                const savedLogoHeight = localStorage.getItem('logoHeight');
+                if (savedLogoHeight) {
+                    document.documentElement.style.setProperty('--logo-height', `${savedLogoHeight}px`);
+                }
                 this.loadData();
                 this.render();
                 this.bindEvents();

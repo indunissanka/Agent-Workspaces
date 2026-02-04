@@ -1,3 +1,20 @@
+function applyBrandSettings() {
+    const savedLogoHeight = localStorage.getItem('logoHeight');
+    if (savedLogoHeight) {
+        document.documentElement.style.setProperty('--logo-height', `${savedLogoHeight}px`);
+    }
+
+    const savedSiteTitle = localStorage.getItem('siteTitle');
+    if (savedSiteTitle) {
+        const titleEl = document.querySelector('.logo h1');
+        if (titleEl) {
+            titleEl.textContent = savedSiteTitle;
+        }
+    }
+}
+
+applyBrandSettings();
+
 const videos = [
     {
         id: 1,

@@ -13,6 +13,7 @@
     --text-secondary: #aaaaaa;
     --border-color: #3a3a3a;
     --shadow-color: rgba(0, 0, 0, 0.3);
+    --logo-height: 24px;
 }
 
 * {
@@ -59,8 +60,8 @@ header .container {
 }
 
 .youtube-logo {
-    width: 72px;
-    height: 24px;
+    width: calc(var(--logo-height) * 3);
+    height: var(--logo-height);
     display: block;
     flex: 0 0 auto;
 }
