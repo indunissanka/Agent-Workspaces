@@ -9,7 +9,7 @@
     {
       "binding": "DB",
       "database_name": "videohub_db",
-      "database_id": "local"  // Use local database for development
+      "database_id": "local"  // Use "local" for development, replace with actual D1 database ID for deployment
     }
   ]
 }
