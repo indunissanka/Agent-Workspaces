@@ -4,394 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Video Listing</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Roboto', 'Arial', sans-serif;
-            background-color: #0f0f0f;
-            color: #fff;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        header {
-            background-color: #212121;
-            padding: 12px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .youtube-logo {
-            width: 90px;
-            height: 20px;
-        }
-        
-        .logo h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #fff;
-        }
-        
-        .search-bar {
-            display: flex;
-            flex: 1;
-            max-width: 600px;
-        }
-        
-        #searchInput {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #303030;
-            background-color: #121212;
-            color: #fff;
-            font-size: 16px;
-            border-radius: 40px 0 0 40px;
-            outline: none;
-        }
-        
-        #searchInput:focus {
-            border-color: #1c62b9;
-        }
-        
-        #searchBtn {
-            padding: 10px 20px;
-            background-color: #303030;
-            border: 1px solid #303030;
-            border-left: none;
-            border-radius: 0 40px 40px 0;
-            cursor: pointer;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-        }
-        
-        #searchBtn:hover {
-            background-color: #3f3f3f;
-        }
-        
-        .filters {
-            display: flex;
-            gap: 12px;
-            padding: 20px 0;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        
-        .filter-btn {
-            padding: 8px 16px;
-            background-color: #272727;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        .filter-btn:hover {
-            background-color: #3f3f3f;
-        }
-        
-        .filter-btn.active {
-            background-color: #fff;
-            color: #0f0f0f;
-        }
-        
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            padding-bottom: 40px;
-        }
-        
-        .video-card {
-            background-color: #1a1a1a;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .video-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
-        
-        .video-thumbnail {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%;
-            overflow: hidden;
-            background-color: #000;
-        }
-        
-        .video-thumbnail img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .video-duration {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .watch-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 4px;
-            background-color: #ff0000;
-            transition: width 0.3s;
-        }
-
-        .watched-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: #aaa;
-        }
-        
-        .video-info {
-            padding: 12px;
-        }
-        
-        .video-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.4;
-        }
-        
-        .video-channel {
-            font-size: 14px;
-            color: #aaa;
-            margin-bottom: 4px;
-        }
-        
-        .video-meta {
-            font-size: 13px;
-            color: #aaa;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .category-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            background-color: #ff0000;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-top: 8px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            overflow: auto;
-        }
-        
-        .modal-content {
-            background-color: #212121;
-            margin: 50px auto;
-            padding: 0;
-            width: 90%;
-            max-width: 1200px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 32px;
-            font-weight: bold;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-        
-        .close:hover,
-        .close:focus {
-            color: #fff;
-        }
-        
-        .video-player {
-            width: 100%;
-            background-color: #000;
-        }
-
-        .video-details {
-            padding: 20px;
-        }
-
-        .video-details h2 {
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-
-        .video-details .video-meta {
-            margin-bottom: 16px;
-            font-size: 14px;
-        }
-
-        .video-details p {
-            color: #ccc;
-            line-height: 1.6;
-        }
-
-        .continue-watching {
-            margin-bottom: 30px;
-        }
-
-        .continue-watching h2 {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        .continue-grid {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-        }
-
-        .continue-grid .video-card {
-            min-width: 280px;
-            flex-shrink: 0;
-        }
-
-        .watch-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-        }
-
-        #currentWatchTime {
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        #saveWatchTimeBtn {
-            padding: 10px 20px;
-            background-color: #ff0000;
-            color: #fff;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-
-        #saveWatchTimeBtn:hover {
-            background-color: #cc0000;
-        }
-
-        #resetWatchTimeBtn {
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        #resetWatchTimeBtn:hover {
-            background-color: #444;
-        }
-
-        .save-success {
-            animation: pulse 0.5s ease;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        @media (max-width: 768px) {
-            header .container {
-                flex-direction: column;
-            }
-
-            .search-bar {
-                max-width: 100%;
-            }
-
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 15px;
-            }
-
-            .logo h1 {
-                font-size: 20px;
-            }
-
-            .watch-controls {
-                flex-wrap: wrap;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="modern.css">
 </head>
 <body>
     <header>
@@ -457,18 +70,351 @@
     </div>
 
     <script>
-        let videos = [];
-        let watchHistory = {};
-        let currentVideoId = null;
-        let watchStartTime = null;
-        let watchInterval = null;
+        const app = {
+            // Application state
+            state: {
+                videos: [],
+                watchHistory: {},
+                currentVideoId: null,
+                watchStartTime: null,
+                watchInterval: null,
+                currentCategory: 'all',
+                searchQuery: '',
+            },
 
-        function loadVideos() {
-            const savedVideos = localStorage.getItem('videos');
-            if (savedVideos) {
-                videos = JSON.parse(savedVideos);
-            } else {
-                videos = [
+            // DOM elements
+            elements: {
+                continueWatchingContainer: null,
+                continueWatchingGrid: null,
+                videoGrid: null,
+                modal: null,
+                videoPlayer: null,
+                modalTitle: null,
+                modalChannel: null,
+                modalViews: null,
+                modalDate: null,
+                modalDescription: null,
+                currentWatchTime: null,
+                saveWatchTimeBtn: null,
+                resetWatchTimeBtn: null,
+                searchInput: null,
+                searchBtn: null,
+                closeBtn: null,
+            },
+
+            // Initialization
+            init() {
+                this.cacheDOMElements();
+                this.loadData();
+                this.render();
+                this.bindEvents();
+                console.log('Application initialized');
+            },
+
+            // Cache DOM elements for performance
+            cacheDOMElements() {
+                this.elements.continueWatchingContainer = document.getElementById('continueWatching');
+                this.elements.continueWatchingGrid = document.getElementById('continueGrid');
+                this.elements.videoGrid = document.getElementById('videoGrid');
+                this.elements.modal = document.getElementById('videoModal');
+                this.elements.videoPlayer = document.getElementById('videoPlayer');
+                this.elements.modalTitle = document.getElementById('modalTitle');
+                this.elements.modalChannel = document.getElementById('modalChannel');
+                this.elements.modalViews = document.getElementById('modalViews');
+                this.elements.modalDate = document.getElementById('modalDate');
+                this.elements.modalDescription = document.getElementById('modalDescription');
+                this.elements.currentWatchTime = document.getElementById('currentWatchTime');
+                this.elements.saveWatchTimeBtn = document.getElementById('saveWatchTimeBtn');
+                this.elements.resetWatchTimeBtn = document.getElementById('resetWatchTimeBtn');
+                this.elements.searchInput = document.getElementById('searchInput');
+                this.elements.searchBtn = document.getElementById('searchBtn');
+                this.elements.closeBtn = document.querySelector('.close');
+            },
+
+            // Load videos and watch history from localStorage
+            loadData() {
+                const savedVideos = localStorage.getItem('videos');
+                this.state.videos = savedVideos ? JSON.parse(savedVideos) : this.getDefaultVideos();
+                
+                const savedHistory = localStorage.getItem('watchHistory');
+                this.state.watchHistory = savedHistory ? JSON.parse(savedHistory) : {};
+            },
+
+            // Save watch history to localStorage
+            saveWatchHistory() {
+                localStorage.setItem('watchHistory', JSON.stringify(this.state.watchHistory));
+            },
+
+            // Render all components
+            render() {
+                this.renderContinueWatching();
+                this.renderVideos();
+            },
+
+            // Bind all event listeners
+            bindEvents() {
+                // Filter buttons
+                const filterButtons = document.querySelectorAll('.filter-btn');
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        this.state.currentCategory = e.currentTarget.dataset.category;
+                        this.renderVideos();
+                    });
+                });
+
+                // Search functionality
+                this.elements.searchBtn.addEventListener('click', () => {
+                    this.state.searchQuery = this.elements.searchInput.value;
+                    this.renderVideos();
+                });
+
+                this.elements.searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.state.searchQuery = this.elements.searchInput.value;
+                        this.renderVideos();
+                    }
+                });
+
+                this.elements.searchInput.addEventListener('input', (e) => {
+                    if (e.target.value === '') {
+                        this.state.searchQuery = '';
+                        this.renderVideos();
+                    }
+                });
+
+                // Modal events
+                this.elements.closeBtn.addEventListener('click', () => this.closeModal());
+                window.addEventListener('click', (e) => {
+                    if (e.target === this.elements.modal) {
+                        this.closeModal();
+                    }
+                });
+            },
+
+            // Render the "Continue Watching" section
+            renderContinueWatching() {
+                const inProgressVideos = this.state.videos.filter(video => {
+                    const history = this.state.watchHistory[video.id];
+                    if (!history) return false;
+                    const totalSeconds = this.parseDuration(video.duration);
+                    const progress = totalSeconds > 0 ? (history.watchedSeconds / totalSeconds) * 100 : 0;
+                    return progress > 0 && progress < 95;
+                }).sort((a, b) => {
+                    return (this.state.watchHistory[b.id]?.lastWatched || 0) - (this.state.watchHistory[a.id]?.lastWatched || 0);
+                }).slice(0, 5);
+
+                if (inProgressVideos.length === 0) {
+                    this.elements.continueWatchingContainer.style.display = 'none';
+                    return;
+                }
+
+                this.elements.continueWatchingContainer.style.display = 'block';
+                this.elements.continueWatchingGrid.innerHTML = '';
+
+                inProgressVideos.forEach(video => {
+                    const progress = this.getWatchProgress(video.id, video.duration);
+                    const history = this.state.watchHistory[video.id];
+                    const videoCard = this.createVideoCard(video, true, progress, history);
+                    this.elements.continueWatchingGrid.appendChild(videoCard);
+                });
+            },
+
+            // Render the main video grid
+            renderVideos() {
+                let filteredVideos = this.state.videos;
+
+                if (this.state.currentCategory !== 'all') {
+                    filteredVideos = filteredVideos.filter(video => video.category === this.state.currentCategory);
+                }
+
+                if (this.state.searchQuery) {
+                    const query = this.state.searchQuery.toLowerCase();
+                    filteredVideos = filteredVideos.filter(video =>
+                        video.title.toLowerCase().includes(query) ||
+                        video.channel.toLowerCase().includes(query)
+                    );
+                }
+
+                this.elements.videoGrid.innerHTML = '';
+                filteredVideos.forEach(video => {
+                    const progress = this.getWatchProgress(video.id, video.duration);
+                    const history = this.state.watchHistory[video.id];
+                    const videoCard = this.createVideoCard(video, false, progress, history);
+                    this.elements.videoGrid.appendChild(videoCard);
+                });
+            },
+            
+            // Create a video card element
+            createVideoCard(video, isContinueWatching, progress, history) {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.onclick = () => this.openModal(video);
+
+                let watchedBadge = '';
+                if (isContinueWatching) {
+                    watchedBadge = `<span class="watched-badge">${this.formatWatchTime(history.watchedSeconds)} watched</span>`;
+                } else if (history && history.watchedSeconds > 0) {
+                    const totalSeconds = this.parseDuration(video.duration);
+                    if (history.watchedSeconds / totalSeconds >= 0.95) {
+                        watchedBadge = '<span class="watched-badge">Watched</span>';
+                    } else {
+                        watchedBadge = `<span class="watched-badge">${this.formatWatchTime(history.watchedSeconds)}</span>`;
+                    }
+                }
+                
+                videoCard.innerHTML = `
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}">
+                        <span class="video-duration">${video.duration}</span>
+                        ${watchedBadge}
+                        ${progress > 0 ? `<div class="watch-progress" style="width: ${progress}%"></div>` : ''}
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.title}</h3>
+                        <p class="video-channel">${video.channel}</p>
+                        <div class="video-meta">
+                            <span>${video.views}</span>
+                            <span>•</span>
+                            <span>${video.date}</span>
+                        </div>
+                        ${!isContinueWatching ? `<span class="category-badge">${video.category}</span>` : ''}
+                    </div>
+                `;
+                return videoCard;
+            },
+
+            // Open the video modal
+            openModal(video) {
+                this.elements.videoPlayer.src = video.videoUrl + '?autoplay=1&enablejsapi=1';
+                this.elements.modalTitle.textContent = video.title;
+                this.elements.modalChannel.textContent = video.channel;
+                this.elements.modalViews.textContent = video.views;
+                this.elements.modalDate.textContent = video.date;
+                this.elements.modalDescription.textContent = video.description;
+
+                this.elements.modal.style.display = 'block';
+                this.startWatchTracking(video.id);
+            },
+
+            // Close the video modal
+            closeModal() {
+                this.stopWatchTracking();
+                this.elements.modal.style.display = 'none';
+                this.elements.videoPlayer.src = '';
+            },
+
+            // Watch time tracking
+            startWatchTracking(videoId) {
+                this.state.currentVideoId = videoId;
+                this.state.watchStartTime = Date.now();
+                this.updateWatchTimeDisplay();
+
+                if (this.state.watchInterval) clearInterval(this.state.watchInterval);
+                this.state.watchInterval = setInterval(() => {
+                    if (this.state.currentVideoId && this.state.watchStartTime) {
+                        const elapsed = (Date.now() - this.state.watchStartTime) / 1000;
+                        if (!this.state.watchHistory[this.state.currentVideoId]) {
+                            this.state.watchHistory[this.state.currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
+                        }
+                        this.state.watchHistory[this.state.currentVideoId].watchedSeconds += elapsed;
+                        this.state.watchHistory[this.state.currentVideoId].lastWatched = Date.now();
+                        this.state.watchStartTime = Date.now();
+                        this.updateWatchTimeDisplay();
+                    }
+                }, 1000);
+            },
+
+            stopWatchTracking() {
+                if (this.state.currentVideoId && this.state.watchStartTime) {
+                    const elapsed = (Date.now() - this.state.watchStartTime) / 1000;
+                    if (!this.state.watchHistory[this.state.currentVideoId]) {
+                        this.state.watchHistory[this.state.currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
+                    }
+                    this.state.watchHistory[this.state.currentVideoId].watchedSeconds += elapsed;
+                    this.state.watchHistory[this.state.currentVideoId].lastWatched = Date.now();
+                    this.saveWatchHistory();
+                }
+                if (this.state.watchInterval) {
+                    clearInterval(this.state.watchInterval);
+                    this.state.watchInterval = null;
+                }
+                this.state.currentVideoId = null;
+                this.state.watchStartTime = null;
+                this.render();
+            },
+
+            updateWatchTimeDisplay() {
+                if (this.state.currentVideoId && this.state.watchHistory[this.state.currentVideoId]) {
+                    this.elements.currentWatchTime.textContent = `Watch time: ${this.formatWatchTime(this.state.watchHistory[this.state.currentVideoId].watchedSeconds)}`;
+                } else {
+                    this.elements.currentWatchTime.textContent = 'Watch time: 0s';
+                }
+            },
+            
+            saveCurrentWatchTime() {
+                if (this.state.currentVideoId && this.state.watchStartTime) {
+                    const elapsed = (Date.now() - this.state.watchStartTime) / 1000;
+                    if (!this.state.watchHistory[this.state.currentVideoId]) {
+                        this.state.watchHistory[this.state.currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
+                    }
+                    this.state.watchHistory[this.state.currentVideoId].watchedSeconds += elapsed;
+                    this.state.watchHistory[this.state.currentVideoId].lastWatched = Date.now();
+                    this.state.watchStartTime = Date.now();
+                    this.saveWatchHistory();
+                    this.updateWatchTimeDisplay();
+                    
+                    this.elements.saveWatchTimeBtn.textContent = 'Saved!';
+                    this.elements.saveWatchTimeBtn.classList.add('save-success');
+                    setTimeout(() => {
+                        this.elements.saveWatchTimeBtn.textContent = 'Save Watch Time';
+                        this.elements.saveWatchTimeBtn.classList.remove('save-success');
+                    }, 1500);
+                }
+            },
+            
+            resetWatchTime() {
+                if (this.state.currentVideoId) {
+                    delete this.state.watchHistory[this.state.currentVideoId];
+                    this.saveWatchHistory();
+                    this.state.watchStartTime = Date.now();
+                    this.updateWatchTimeDisplay();
+
+                    this.elements.resetWatchTimeBtn.textContent = 'Reset!';
+                    setTimeout(() => {
+                        this.elements.resetWatchTimeBtn.textContent = 'Reset';
+                    }, 1000);
+                }
+            },
+
+            // Utility functions
+            parseDuration(durationStr) {
+                const parts = durationStr.split(':').map(Number);
+                if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                if (parts.length === 2) return parts[0] * 60 + parts[1];
+                return 0;
+            },
+
+            formatWatchTime(seconds) {
+                if (seconds < 60) return `${Math.floor(seconds)}s`;
+                if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`;
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                return `${h}h ${m}m`;
+            },
+
+            getWatchProgress(videoId, videoDuration) {
+                const history = this.state.watchHistory[videoId];
+                if (!history) return 0;
+                const totalSeconds = this.parseDuration(videoDuration);
+                if (totalSeconds === 0) return 0;
+                return Math.min((history.watchedSeconds / totalSeconds) * 100, 100);
+            },
+            
+            // Default video data
+            getDefaultVideos() {
+                return [
                     {
                         id: 1,
                         title: "Learn JavaScript in 2024 - Complete Beginner's Guide",
@@ -494,385 +440,20 @@
                         description: "The most epic gaming moments from this year!"
                     }
                 ];
-                localStorage.setItem('videos', JSON.stringify(videos));
             }
-        }
-
-        function loadWatchHistory() {
-            const saved = localStorage.getItem('watchHistory');
-            if (saved) {
-                watchHistory = JSON.parse(saved);
-            }
-        }
-
-        function saveWatchHistory() {
-            localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
-        }
-
-        function parseDuration(durationStr) {
-            const parts = durationStr.split(':').map(Number);
-            if (parts.length === 3) {
-                return parts[0] * 3600 + parts[1] * 60 + parts[2];
-            } else if (parts.length === 2) {
-                return parts[0] * 60 + parts[1];
-            }
-            return 0;
-        }
-
-        function formatWatchTime(seconds) {
-            if (seconds < 60) return `${Math.floor(seconds)}s`;
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`;
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            return `${h}h ${m}m`;
-        }
-
-        function getWatchProgress(videoId, videoDuration) {
-            const history = watchHistory[videoId];
-            if (!history) return 0;
-            const totalSeconds = parseDuration(videoDuration);
-            if (totalSeconds === 0) return 0;
-            return Math.min((history.watchedSeconds / totalSeconds) * 100, 100);
-        }
-
-        let currentCategory = 'all';
-        let searchQuery = '';
-
-        function renderContinueWatching() {
-            const container = document.getElementById('continueWatching');
-            const grid = document.getElementById('continueGrid');
-
-            const inProgressVideos = videos.filter(video => {
-                const history = watchHistory[video.id];
-                if (!history) return false;
-                const totalSeconds = parseDuration(video.duration);
-                const progress = totalSeconds > 0 ? (history.watchedSeconds / totalSeconds) * 100 : 0;
-                return progress > 0 && progress < 95;
-            }).sort((a, b) => {
-                return (watchHistory[b.id]?.lastWatched || 0) - (watchHistory[a.id]?.lastWatched || 0);
-            }).slice(0, 5);
-
-            if (inProgressVideos.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-
-            container.style.display = 'block';
-            grid.innerHTML = '';
-
-            inProgressVideos.forEach(video => {
-                const progress = getWatchProgress(video.id, video.duration);
-                const history = watchHistory[video.id];
-                const videoCard = document.createElement('div');
-                videoCard.className = 'video-card';
-                videoCard.onclick = () => openModal(video);
-
-                videoCard.innerHTML = `
-                    <div class="video-thumbnail">
-                        <img src="${video.thumbnail}" alt="${video.title}">
-                        <span class="video-duration">${video.duration}</span>
-                        <span class="watched-badge">${formatWatchTime(history.watchedSeconds)} watched</span>
-                        <div class="watch-progress" style="width: ${progress}%"></div>
-                    </div>
-                    <div class="video-info">
-                        <h3 class="video-title">${video.title}</h3>
-                        <p class="video-channel">${video.channel}</p>
-                        <div class="video-meta">
-                            <span>${video.views}</span>
-                            <span>•</span>
-                            <span>${video.date}</span>
-                        </div>
-                    </div>
-                `;
-
-                grid.appendChild(videoCard);
-            });
-        }
-
-        function renderVideos(videosToRender) {
-            const videoGrid = document.getElementById('videoGrid');
-            videoGrid.innerHTML = '';
-
-            videosToRender.forEach(video => {
-                const progress = getWatchProgress(video.id, video.duration);
-                const history = watchHistory[video.id];
-                const videoCard = document.createElement('div');
-                videoCard.className = 'video-card';
-                videoCard.onclick = () => openModal(video);
-
-                let watchedBadge = '';
-                if (history && history.watchedSeconds > 0) {
-                    const totalSeconds = parseDuration(video.duration);
-                    if (history.watchedSeconds / totalSeconds >= 0.95) {
-                        watchedBadge = '<span class="watched-badge">Watched</span>';
-                    } else {
-                        watchedBadge = `<span class="watched-badge">${formatWatchTime(history.watchedSeconds)}</span>`;
-                    }
-                }
-
-                videoCard.innerHTML = `
-                    <div class="video-thumbnail">
-                        <img src="${video.thumbnail}" alt="${video.title}">
-                        <span class="video-duration">${video.duration}</span>
-                        ${watchedBadge}
-                        ${progress > 0 ? `<div class="watch-progress" style="width: ${progress}%"></div>` : ''}
-                    </div>
-                    <div class="video-info">
-                        <h3 class="video-title">${video.title}</h3>
-                        <p class="video-channel">${video.channel}</p>
-                        <div class="video-meta">
-                            <span>${video.views}</span>
-                            <span>•</span>
-                            <span>${video.date}</span>
-                        </div>
-                        <span class="category-badge">${video.category}</span>
-                    </div>
-                `;
-
-                videoGrid.appendChild(videoCard);
-            });
-        }
-
-        function filterVideos() {
-            let filteredVideos = videos;
-
-            if (currentCategory !== 'all') {
-                filteredVideos = filteredVideos.filter(video => video.category === currentCategory);
-            }
-
-            if (searchQuery) {
-                filteredVideos = filteredVideos.filter(video =>
-                    video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    video.channel.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            }
-
-            renderVideos(filteredVideos);
-        }
-
-        function startWatchTracking(videoId) {
-            currentVideoId = videoId;
-            watchStartTime = Date.now();
-
-            if (watchInterval) clearInterval(watchInterval);
-            watchInterval = setInterval(() => {
-                if (currentVideoId && watchStartTime) {
-                    const elapsed = (Date.now() - watchStartTime) / 1000;
-                    if (!watchHistory[currentVideoId]) {
-                        watchHistory[currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
-                    }
-                    watchHistory[currentVideoId].watchedSeconds += elapsed;
-                    watchHistory[currentVideoId].lastWatched = Date.now();
-                    watchStartTime = Date.now();
-                    saveWatchHistory();
-                }
-            }, 5000);
-        }
-
-        function stopWatchTracking() {
-            if (currentVideoId && watchStartTime) {
-                const elapsed = (Date.now() - watchStartTime) / 1000;
-                if (!watchHistory[currentVideoId]) {
-                    watchHistory[currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
-                }
-                watchHistory[currentVideoId].watchedSeconds += elapsed;
-                watchHistory[currentVideoId].lastWatched = Date.now();
-                saveWatchHistory();
-            }
-            if (watchInterval) {
-                clearInterval(watchInterval);
-                watchInterval = null;
-            }
-            currentVideoId = null;
-            watchStartTime = null;
-            renderContinueWatching();
-            filterVideos();
-        }
-
-        function openModal(video) {
-            const modal = document.getElementById('videoModal');
-            const videoPlayer = document.getElementById('videoPlayer');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalChannel = document.getElementById('modalChannel');
-            const modalViews = document.getElementById('modalViews');
-            const modalDate = document.getElementById('modalDate');
-            const modalDescription = document.getElementById('modalDescription');
-
-            videoPlayer.src = video.videoUrl + '?autoplay=1&enablejsapi=1';
-            modalTitle.textContent = video.title;
-            modalChannel.textContent = video.channel;
-            modalViews.textContent = video.views;
-            modalDate.textContent = video.date;
-            modalDescription.textContent = video.description;
-
-            modal.style.display = 'block';
-            startWatchTracking(video.id);
-        }
-
-        function startWatchTracking(videoId) {
-            currentVideoId = videoId;
-            watchStartTime = Date.now();
-
-            updateWatchTimeDisplay();
-
-            if (watchInterval) clearInterval(watchInterval);
-            watchInterval = setInterval(() => {
-                if (currentVideoId && watchStartTime) {
-                    const elapsed = (Date.now() - watchStartTime) / 1000;
-                    if (!watchHistory[currentVideoId]) {
-                        watchHistory[currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
-                    }
-                    watchHistory[currentVideoId].watchedSeconds += elapsed;
-                    watchHistory[currentVideoId].lastWatched = Date.now();
-                    watchStartTime = Date.now();
-                    updateWatchTimeDisplay();
-                }
-            }, 1000);
-        }
-
-        function stopWatchTracking() {
-            if (currentVideoId && watchStartTime) {
-                const elapsed = (Date.now() - watchStartTime) / 1000;
-                if (!watchHistory[currentVideoId]) {
-                    watchHistory[currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
-                }
-                watchHistory[currentVideoId].watchedSeconds += elapsed;
-                watchHistory[currentVideoId].lastWatched = Date.now();
-                saveWatchHistory();
-            }
-            if (watchInterval) {
-                clearInterval(watchInterval);
-                watchInterval = null;
-            }
-            currentVideoId = null;
-            watchStartTime = null;
-            renderContinueWatching();
-            filterVideos();
-        }
-
-        function updateWatchTimeDisplay() {
-            const display = document.getElementById('currentWatchTime');
-            if (currentVideoId && watchHistory[currentVideoId]) {
-                display.textContent = `Watch time: ${formatWatchTime(watchHistory[currentVideoId].watchedSeconds)}`;
-            } else {
-                display.textContent = 'Watch time: 0s';
-            }
-        }
-
-        function saveCurrentWatchTime() {
-            if (currentVideoId && watchStartTime) {
-                const elapsed = (Date.now() - watchStartTime) / 1000;
-                if (!watchHistory[currentVideoId]) {
-                    watchHistory[currentVideoId] = { watchedSeconds: 0, lastWatched: Date.now() };
-                }
-                watchHistory[currentVideoId].watchedSeconds += elapsed;
-                watchHistory[currentVideoId].lastWatched = Date.now();
-                watchStartTime = Date.now();
-                saveWatchHistory();
-                updateWatchTimeDisplay();
-
-                const btn = document.getElementById('saveWatchTimeBtn');
-                btn.textContent = 'Saved!';
-                btn.classList.add('save-success');
-                setTimeout(() => {
-                    btn.textContent = 'Save Watch Time';
-                    btn.classList.remove('save-success');
-                }, 1500);
-            }
-        }
-
-        function resetWatchTime() {
-            if (currentVideoId) {
-                delete watchHistory[currentVideoId];
-                saveWatchHistory();
-                watchStartTime = Date.now();
-                updateWatchTimeDisplay();
-
-                const btn = document.getElementById('resetWatchTimeBtn');
-                btn.textContent = 'Reset!';
-                setTimeout(() => {
-                    btn.textContent = 'Reset';
-                }, 1000);
-            }
-        }
-
-        function openModal(video) {
-            const modal = document.getElementById('videoModal');
-            const videoPlayer = document.getElementById('videoPlayer');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalChannel = document.getElementById('modalChannel');
-            const modalViews = document.getElementById('modalViews');
-            const modalDate = document.getElementById('modalDate');
-            const modalDescription = document.getElementById('modalDescription');
-
-            videoPlayer.src = video.videoUrl + '?autoplay=1&enablejsapi=1';
-            modalTitle.textContent = video.title;
-            modalChannel.textContent = video.channel;
-            modalViews.textContent = video.views;
-            modalDate.textContent = video.date;
-            modalDescription.textContent = video.description;
-
-            modal.style.display = 'block';
-            startWatchTracking(video.id);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('videoModal');
-            const videoPlayer = document.getElementById('videoPlayer');
-            stopWatchTracking();
-            modal.style.display = 'none';
-            videoPlayer.src = '';
-        }
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Page loaded, rendering videos...');
-            loadVideos();
-            loadWatchHistory();
-            renderContinueWatching();
-            renderVideos(videos);
-
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            filterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    currentCategory = button.dataset.category;
-                    filterVideos();
-                });
-            });
-
-            const searchInput = document.getElementById('searchInput');
-            const searchBtn = document.getElementById('searchBtn');
-
-            searchBtn.addEventListener('click', () => {
-                searchQuery = searchInput.value;
-                filterVideos();
-            });
-
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    searchQuery = searchInput.value;
-                    filterVideos();
-                }
-            });
-
-            searchInput.addEventListener('input', (e) => {
-                if (e.target.value === '') {
-                    searchQuery = '';
-                    filterVideos();
-                }
-            });
-
-            const closeBtn = document.querySelector('.close');
-            closeBtn.addEventListener('click', closeModal);
-
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('videoModal');
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
+            app.init();
         });
+        
+        // Make watch time functions globally accessible from inline onclick attributes
+        function saveCurrentWatchTime() {
+            app.saveCurrentWatchTime();
+        }
+        function resetWatchTime() {
+            app.resetWatchTime();
+        }
     </script>
 </body>
 </html>
