@@ -1,3 +1,6 @@
+# wrangler.toml
+# Configuration for YouTube Video Listing App (linktube)
+
 name = "linktube"
 compatibility_date = "2026-02-04"
 main = "src/worker.js"
@@ -5,12 +8,18 @@ main = "src/worker.js"
 [assets]
 directory = "./"
 
+# D1 Database Configuration
+# For local development: uses preview_database_id = "local"
+# For production: set DB_ID environment variable or replace with actual database ID
 [[d1_databases]]
 binding = "DB"
 database_name = "videohub_db"
-database_id = "${DB_ID}"  # Set DB_ID environment variable for deployment
-preview_database_id = "local"  # Use local database for development
+database_id = "REPLACE_WITH_DATABASE_ID"  # Replace with actual D1 database ID for production
+preview_database_id = "local"  # Used for wrangler dev --local
 migrations_dir = "migrations"
 
-# For local development without DB_ID set, use empty string as fallback
-# Wrangler will create a local database automatically
+# To deploy:
+# 1. Create D1 database: wrangler d1 create videohub_db
+# 2. Get database ID from output
+# 3. Replace REPLACE_WITH_DATABASE_ID with actual ID
+# 4. Or set DB_ID environment variable and use database_id = "${DB_ID}"

@@ -1,12 +1,10 @@
 # Deployment Guide for YouTube Video Listing App (linktube)
 
-This guide explains how to deploy the YouTube Video Listing app to Cloudflare Workers with D1 database automation.
+This guide explains how to deploy the YouTube Video Listing app to Cloudflare Workers with proper D1 database binding.
 
 ## Configuration Files
 
-### 1. `wrangler.toml` (Primary Configuration)
-Updated to work with CI/CD and automatic database creation:
-
+### 1. `wrangler.toml` (Primary Configuration for Local Development)
 ```toml
 name = "linktube"
 compatibility_date = "2026-02-04"
@@ -18,140 +16,150 @@ directory = "./"
 [[d1_databases]]
 binding = "DB"
 database_name = "videohub_db"
-database_id = "${DB_ID}"  # Set DB_ID environment variable for deployment
-preview_database_id = "local"  # Use local database for development
+database_id = "REPLACE_WITH_DATABASE_ID"  # Replace with actual D1 database ID for production
+preview_database_id = "local"  # Used for wrangler dev --local
 migrations_dir = "migrations"
 ```
 
-### 2. `migrations/0001_initial.sql`
-Contains the database schema and sample data that will be automatically applied during deployment.
+### 2. `wrangler.ci.toml` (CI/CD Configuration)
+```toml
+name = "linktube"
+compatibility_date = "2026-02-04"
+main = "src/worker.js"
 
-### 3. `deploy.sh` (Automated Deployment Script)
-Bash script that handles database creation and deployment automatically.
+[assets]
+directory = "./"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "videohub_db"
+database_id = "${DB_ID}"  # Must be set in CI environment
+preview_database_id = "local"
+migrations_dir = "migrations"
+```
+
+### 3. `migrations/0001_initial.sql`
+Contains the database schema and sample data.
+
+### 4. `deploy.sh` (Automated Deployment Script)
+Handles database creation and deployment.
 
 ## Deployment Methods
 
 ### Method 1: Automated Script (Recommended)
 
 ```bash
-# Make script executable
 chmod +x deploy.sh
-
-# Run deployment
 ./deploy.sh
-
-# For preview deployment
-./deploy.sh --preview
 ```
 
-The script will:
-1. Check if wrangler is installed and logged in
-2. Look for existing D1 database or create a new one
-3. Apply database migrations
-4. Deploy the Worker to Cloudflare
+The script:
+1. Checks for existing D1 database or creates new one
+2. Applies migrations
+3. Deploys Worker
 
 ### Method 2: Manual Deployment
 
-#### Prerequisites
-- Cloudflare account with Workers enabled
-- Wrangler CLI installed (`npm install -g wrangler`)
-- Logged in to Cloudflare (`wrangler login`)
-
-#### Steps:
-
-1. **Create D1 database (if not exists):**
-   ```bash
-   wrangler d1 create videohub_db
-   ```
-
-2. **Set database ID as environment variable:**
-   ```bash
-   export DB_ID="your-database-id-here"
-   ```
-
-3. **Apply migrations:**
-   ```bash
-   wrangler d1 migrations apply videohub_db --remote
-   ```
-
-4. **Deploy Worker:**
-   ```bash
-   wrangler deploy
-   ```
-
-### Method 3: CI/CD Integration
-
-For GitHub Actions, Netlify, or other CI/CD platforms:
-
-1. Set environment variables in CI:
-   - `CLOUDFLARE_API_TOKEN` - Cloudflare API token
-   - `DB_ID` - (Optional) D1 database ID
-
-2. Use the deployment script or run commands directly:
-
-```yaml
-# Example GitHub Actions workflow
-- name: Deploy to Cloudflare Workers
-  run: |
-    npm install -g wrangler
-    ./deploy.sh
-  env:
-    CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+#### Step 1: Create D1 Database
+```bash
+wrangler d1 create videohub_db
 ```
+Copy the database ID from output.
+
+#### Step 2: Update Configuration
+Edit `wrangler.toml` and replace `REPLACE_WITH_DATABASE_ID` with the actual database ID.
+
+#### Step 3: Apply Migrations
+```bash
+wrangler d1 migrations apply videohub_db --remote
+```
+
+#### Step 4: Deploy
+```bash
+wrangler deploy
+```
+
+### Method 3: CI/CD Deployment
+
+#### Option A: Using Environment Variable
+1. Set `DB_ID` environment variable in CI with your D1 database ID
+2. Deploy with CI configuration:
+   ```bash
+   wrangler deploy --config wrangler.ci.toml
+   ```
+
+#### Option B: Using Deployment Script
+1. Set `CLOUDFLARE_API_TOKEN` in CI
+2. Run:
+   ```bash
+   ./deploy.sh
+   ```
+
+## Fixing "D1 database not properly binded" Error
+
+This error occurs when:
+1. `database_id` is empty or invalid
+2. Environment variable `DB_ID` is not set in CI
+3. Using wrong configuration file
+
+**Solution:**
+1. **For CI/CD:** Set `DB_ID` environment variable with valid D1 database ID
+2. **For manual deployment:** Replace `REPLACE_WITH_DATABASE_ID` in `wrangler.toml`
+3. **For local development:** Use `wrangler dev --local` (uses `preview_database_id = "local"`)
 
 ## Local Development
 
 ```bash
-# Start local development server
 wrangler dev --local
-
-# This will:
-# - Use local SQLite database (preview_database_id = "local")
-# - Serve assets from current directory
-# - Apply migrations to local database
-# - Available at http://localhost:8787
 ```
+- Uses local SQLite database
+- Available at http://localhost:8787
+- Database binding works as `env.DB (local)`
 
 ## Verification
 
 After deployment:
-
-1. **Check Worker URL:** Output will show your Worker URL (e.g., `https://linktube.<your-subdomain>.workers.dev`)
+1. **Check binding:** Worker logs should show `env.DB (videohub_db)` not `env.DB (local)`
 2. **Test API:** `https://linktube.<your-subdomain>.workers.dev/api/videos`
-3. **Test Frontend:** Visit the Worker URL in browser
+3. **Test frontend:** Visit Worker URL
 
 ## Troubleshooting
 
-### Database Creation Fails in CI
-- Ensure `CLOUDFLARE_API_TOKEN` has D1 database permissions
-- Check Wrangler version: `wrangler --version` (should be 4.0+)
-- The `deploy.sh` script includes fallback logic for database creation
+### Database Binding Shows as `(local)`
+- Means `database_id` is empty or "local"
+- For production: set valid `database_id` or `DB_ID` environment variable
 
 ### "binding DB of type d1 must have a valid `id` specified"
-- Set `DB_ID` environment variable with valid D1 database ID
-- Or let the deployment script create one automatically
+- `database_id` is missing or invalid
+- Set `DB_ID` environment variable or update configuration
 
 ### Migrations Not Applying
-- Verify `migrations_dir` points to correct folder
-- Check SQL syntax in migration files
-- Run `wrangler d1 migrations list videohub_db --remote` to see applied migrations
+```bash
+wrangler d1 migrations apply videohub_db --remote
+```
 
 ### Worker Name Mismatch
-- CI expects Worker name "linktube" (configured in wrangler.toml)
-- If you need a different name, update `name = "linktube"` in wrangler.toml
+- CI expects "linktube" - already configured in both TOML files
 
-## Post-Deployment
+## Files
 
-1. **Custom Domain:** Add custom domain in Cloudflare dashboard
-2. **Environment Variables:** Set secrets via `wrangler secret put`
-3. **Monitoring:** Use Cloudflare dashboard to monitor Worker performance
-4. **Database Management:** Use `wrangler d1` commands to manage your database
-
-## Files Created
-
-- `wrangler.toml` - Main configuration (CI-compatible)
+- `wrangler.toml` - Local development configuration
+- `wrangler.ci.toml` - CI/CD configuration (environment variables)
+- `deploy.sh` - Deployment automation script
 - `migrations/0001_initial.sql` - Database schema
-- `deploy.sh` - Automated deployment script
 - `DEPLOYMENT.md` - This guide
 
-For more details, refer to [Cloudflare Workers documentation](https://developers.cloudflare.com/workers/).
+## Quick CI Setup
+
+```yaml
+# GitHub Actions example
+- name: Deploy
+  run: |
+    npm install -g wrangler
+    wrangler deploy --config wrangler.ci.toml
+  env:
+    CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+    DB_ID: ${{ secrets.DB_ID }}
+```
+
+The D1 database binding will work correctly when `database_id` is properly set to a valid D1 database ID.

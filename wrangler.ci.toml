@@ -1,0 +1,22 @@
+# wrangler.ci.toml
+# CI-specific configuration for YouTube Video Listing App (linktube)
+
+name = "linktube"
+compatibility_date = "2026-02-04"
+main = "src/worker.js"
+
+[assets]
+directory = "./"
+
+# D1 Database Configuration for CI
+# Uses environment variable DB_ID for database ID
+[[d1_databases]]
+binding = "DB"
+database_name = "videohub_db"
+database_id = "${DB_ID}"  # Must be set in CI environment
+preview_database_id = "local"
+migrations_dir = "migrations"
+
+# CI deployment should:
+# 1. Set DB_ID environment variable with D1 database ID
+# 2. Run: wrangler deploy --config wrangler.ci.toml
