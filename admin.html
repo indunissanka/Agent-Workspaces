@@ -639,14 +639,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Category <span class="required">*</span></label>
-                                <select class="form-control" id="category" name="category" required>
-                                    <option value="">Select category</option>
-                                    <option value="music">🎵 Music</option>
-                                    <option value="gaming">🎮 Gaming</option>
-                                    <option value="education">📚 Education</option>
-                                    <option value="tech">💻 Technology</option>
-                                    <option value="entertainment">🎭 Entertainment</option>
-                                </select>
+                                <input type="text" class="form-control" id="category" name="category" required placeholder="e.g., Music, Gaming, Tech">
                             </div>
                         </div>
 
@@ -697,7 +690,7 @@
                         <div class="search-input">
                             <input type="text" id="searchVideos" placeholder="Search videos..." oninput="filterVideos()">
                         </div>
-                        <select class="form-control filter-select" id="filterCategory" onchange="filterVideos()">
+                        <select class="form-control filter-select" id="filterCategory">
                             <option value="">All Categories</option>
                             <option value="music">Music</option>
                             <option value="gaming">Gaming</option>

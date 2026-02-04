@@ -286,17 +286,8 @@ function closeModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    renderCategories();
     renderVideos(videos);
-
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            currentCategory = button.dataset.category;
-            filterVideos();
-        });
-    });
 
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
@@ -330,3 +321,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function renderCategories() {
+    const categories = ['all', ...new Set(videos.map(video => video.category))];
+    const filtersContainer = document.querySelector('.filters');
+    filtersContainer.innerHTML = '';
+    
+    categories.forEach(category => {
+        const button = document.createElement('button');
+        button.className = 'filter-btn';
+        button.dataset.category = category;
+        button.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        if (category === currentCategory) {
+            button.classList.add('active');
+        }
+        button.addEventListener('click', (e) => {
+            currentCategory = e.currentTarget.dataset.category;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            filterVideos();
+        });
+        filtersContainer.appendChild(button);
+    });
+}

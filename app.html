@@ -28,14 +28,7 @@
     </header>
 
     <main class="container">
-        <div class="filters">
-            <button class="filter-btn active" data-category="all">All</button>
-            <button class="filter-btn" data-category="music">Music</button>
-            <button class="filter-btn" data-category="gaming">Gaming</button>
-            <button class="filter-btn" data-category="education">Education</button>
-            <button class="filter-btn" data-category="tech">Technology</button>
-            <button class="filter-btn" data-category="entertainment">Entertainment</button>
-        </div>
+        <div class="filters"></div>
 
         <div id="continueWatching" class="continue-watching" style="display: none;">
             <h2>Continue Watching</h2>
@@ -147,23 +140,13 @@
 
             // Render all components
             render() {
+                this.renderCategories();
                 this.renderContinueWatching();
                 this.renderVideos();
             },
 
             // Bind all event listeners
             bindEvents() {
-                // Filter buttons
-                const filterButtons = document.querySelectorAll('.filter-btn');
-                filterButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        filterButtons.forEach(btn => btn.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
-                        this.state.currentCategory = e.currentTarget.dataset.category;
-                        this.renderVideos();
-                    });
-                });
-
                 // Search functionality
                 this.elements.searchBtn.addEventListener('click', () => {
                     this.state.searchQuery = this.elements.searchInput.value;
@@ -190,6 +173,30 @@
                     if (e.target === this.elements.modal) {
                         this.closeModal();
                     }
+                });
+            },
+
+            // Render category filter buttons
+            renderCategories() {
+                const categories = ['all', ...new Set(this.state.videos.map(video => video.category))];
+                const filtersContainer = document.querySelector('.filters');
+                filtersContainer.innerHTML = '';
+                
+                categories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.className = 'filter-btn';
+                    button.dataset.category = category;
+                    button.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                    if (category === this.state.currentCategory) {
+                        button.classList.add('active');
+                    }
+                    button.addEventListener('click', (e) => {
+                        this.state.currentCategory = e.currentTarget.dataset.category;
+                        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        this.renderVideos();
+                    });
+                    filtersContainer.appendChild(button);
                 });
             },
 
