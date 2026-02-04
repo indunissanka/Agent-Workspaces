@@ -265,23 +265,31 @@ function openModal(video) {
     const savedTime = getSavedWatchTime(video.id);
     currentWatchTime = savedTime;
 
-    videoPlayer.src = video.videoUrl;
+    videoPlayer.src = video.videoUrl + '?autoplay=1&enablejsapi=1';
     modalTitle.textContent = video.title;
     modalChannel.textContent = video.channel;
     modalViews.textContent = video.views;
     modalDate.textContent = video.date;
     modalDescription.textContent = video.description;
-    watchTimeDisplay.textContent = formatTime(currentWatchTime);
-
-    if (savedTime > 0) {
-        saveWatchTimeBtn.textContent = `Resume from ${formatTime(savedTime)}`;
-    } else {
-        saveWatchTimeBtn.textContent = 'Save Watch Time';
+    
+    // Only update watch time elements if they exist
+    if (watchTimeDisplay) {
+        watchTimeDisplay.textContent = formatTime(currentWatchTime);
+    }
+    
+    if (saveWatchTimeBtn) {
+        if (savedTime > 0) {
+            saveWatchTimeBtn.textContent = `Resume from ${formatTime(savedTime)}`;
+        } else {
+            saveWatchTimeBtn.textContent = 'Save Watch Time';
+        }
     }
 
     watchTimeInterval = setInterval(() => {
         currentWatchTime++;
-        watchTimeDisplay.textContent = formatTime(currentWatchTime);
+        if (watchTimeDisplay) {
+            watchTimeDisplay.textContent = formatTime(currentWatchTime);
+        }
     }, 1000);
 
     modal.style.display = 'block';
