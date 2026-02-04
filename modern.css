@@ -59,14 +59,14 @@ header .container {
 }
 
 .youtube-logo {
-    width: 96px;
-    height: 26px;
+    width: 72px;
+    height: 20px;
     display: block;
     flex: 0 0 auto;
 }
 
 .logo h1 {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1;
