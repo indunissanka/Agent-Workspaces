@@ -15,7 +15,7 @@ function applyBrandSettings() {
 
 applyBrandSettings();
 
-const videos = [
+const defaultVideos = [
     {
         id: 1,
         title: "Learn JavaScript in 2024 - Complete Beginner's Guide",
@@ -162,6 +162,8 @@ const videos = [
     }
 ];
 
+let videos = [];
+
 let currentCategory = 'all';
 let searchQuery = '';
 let currentVideo = null;
@@ -302,7 +304,20 @@ function closeModal() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function loadVideosFromApi() {
+    try {
+        const response = await fetch('/api/videos');
+        if (!response.ok) throw new Error('Failed to load videos');
+        const data = await response.json();
+        videos = Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error(error);
+        videos = defaultVideos;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadVideosFromApi();
     renderCategories();
     renderVideos(videos);
 

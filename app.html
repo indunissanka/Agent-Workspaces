@@ -93,7 +93,7 @@
             },
 
             // Initialization
-            init() {
+            async init() {
                 this.cacheDOMElements();
                 // Load site title from localStorage before rendering anything that uses it
                 const savedSiteTitle = localStorage.getItem('siteTitle');
@@ -104,7 +104,7 @@
                 if (savedLogoHeight) {
                     document.documentElement.style.setProperty('--logo-height', `${savedLogoHeight}px`);
                 }
-                this.loadData();
+                await this.loadData();
                 this.render();
                 this.bindEvents();
                 console.log('Application initialized');
@@ -130,11 +130,17 @@
             },
 
             // Load videos and watch history from localStorage
-            loadData() {
-                const savedVideos = localStorage.getItem('videos');
-                this.state.videos = savedVideos ? JSON.parse(savedVideos) : this.getDefaultVideos();
-                console.log('Videos loaded:', this.state.videos); // Diagnostic log
-                
+            async loadData() {
+                try {
+                    const response = await fetch('/api/videos');
+                    if (!response.ok) throw new Error('Failed to load videos');
+                    const data = await response.json();
+                    this.state.videos = Array.isArray(data) ? data : [];
+                } catch (error) {
+                    console.error(error);
+                    this.state.videos = this.getDefaultVideos();
+                }
+
                 const savedHistory = localStorage.getItem('watchHistory');
                 this.state.watchHistory = savedHistory ? JSON.parse(savedHistory) : {};
             },

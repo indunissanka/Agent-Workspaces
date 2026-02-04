@@ -1,7 +1,15 @@
 {
   "name": "videohub-assets",
   "compatibility_date": "2026-02-04",
+  "main": "src/worker.js",
   "assets": {
-    "bucket": "./"
-  }
+    "directory": "./"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "videohub_db",
+      "database_id": "REPLACE_WITH_DATABASE_ID"
+    }
+  ]
 }

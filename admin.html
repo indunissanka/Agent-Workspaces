@@ -804,13 +804,16 @@
         });
 
 
-        function loadVideos() {
-            const savedVideos = localStorage.getItem('videos');
-            if (savedVideos) {
-                videos = JSON.parse(savedVideos);
-            } else {
-                videos = getDefaultVideos();
-                saveVideos();
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/videos');
+                if (!response.ok) throw new Error('Failed to load videos');
+                const data = await response.json();
+                videos = Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error(error);
+                videos = [];
+                showToast('Could not load videos from server.', 'error');
             }
             populateCategoryDropdowns();
             renderVideoList();
@@ -901,8 +904,20 @@
         }
 
 
-        function saveVideos() {
-            localStorage.setItem('videos', JSON.stringify(videos));
+        async function apiRequest(path, options = {}) {
+            const response = await fetch(path, {
+                headers: { 'Content-Type': 'application/json' },
+                ...options
+            });
+            if (!response.ok) {
+                let message = 'Request failed.';
+                try {
+                    const payload = await response.json();
+                    if (payload && payload.error) message = payload.error;
+                } catch (_) {}
+                throw new Error(message);
+            }
+            return response.json();
         }
 
         function populateCategoryDropdowns() {
@@ -1244,18 +1259,22 @@
             deleteVideoId = null;
         }
 
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
             if (deleteVideoId) {
-                videos = videos.filter(v => v.id !== deleteVideoId);
-                saveVideos();
-                renderVideoList();
-                updateStats();
-                showToast('Video deleted successfully');
-                closeDeleteModal();
+                try {
+                    await apiRequest(`/api/videos/${deleteVideoId}`, { method: 'DELETE' });
+                    videos = videos.filter(v => v.id !== deleteVideoId);
+                    renderVideoList();
+                    updateStats();
+                    showToast('Video deleted successfully');
+                    closeDeleteModal();
+                } catch (error) {
+                    showToast(error.message || 'Could not delete video.', 'error');
+                }
             }
         });
 
-        document.getElementById('videoForm').addEventListener('submit', function(e) {
+        document.getElementById('videoForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
@@ -1277,47 +1296,44 @@
                 return;
             }
 
-            if (editingId) {
-                const index = videos.findIndex(v => v.id === editingId);
-                if (index !== -1) {
-                    videos[index] = {
-                        ...videos[index],
-                        title: formData.get('title'),
-                        channel: formData.get('channel'),
-                        thumbnail: thumbnail,
-                        videoUrl: videoUrl,
-                        category: selectedCategory, // Use dynamic category
-                        duration: formData.get('duration'),
-                        views: formData.get('views'),
-                        date: formData.get('date'),
-                        description: formData.get('description')
-                    };
+            const payload = {
+                title: formData.get('title'),
+                channel: formData.get('channel'),
+                thumbnail: thumbnail,
+                videoUrl: videoUrl,
+                category: selectedCategory,
+                duration: formData.get('duration'),
+                views: formData.get('views'),
+                date: formData.get('date'),
+                description: formData.get('description')
+            };
+
+            try {
+                if (editingId) {
+                    const updated = await apiRequest(`/api/videos/${editingId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                    const index = videos.findIndex(v => v.id === editingId);
+                    if (index !== -1) videos[index] = updated;
                     showToast('Video updated successfully!');
+                    editingId = null;
+                } else {
+                    const created = await apiRequest('/api/videos', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    videos.unshift(created);
+                    showToast('Video added successfully!');
                 }
-                editingId = null;
-            } else {
-                const newVideo = {
-                    id: videos.length > 0 ? Math.max(...videos.map(v => v.id)) + 1 : 1,
-                    title: formData.get('title'),
-                    channel: formData.get('channel'),
-                    thumbnail: thumbnail,
-                    videoUrl: videoUrl,
-                    category: selectedCategory, // Use dynamic category
-                    duration: formData.get('duration'),
-                    views: formData.get('views'),
-                    date: formData.get('date'),
-                    description: formData.get('description')
-                };
-                
-                videos.unshift(newVideo);
-                showToast('Video added successfully!');
+
+                populateCategoryDropdowns();
+                renderVideoList();
+                updateStats();
+                clearForm();
+            } catch (error) {
+                showToast(error.message || 'Could not save video.', 'error');
             }
-            
-            saveVideos();
-            populateCategoryDropdowns(); // Re-populate dropdowns after adding/updating
-            renderVideoList();
-            updateStats();
-            clearForm();
         });
 
         document.getElementById('deleteModal').addEventListener('click', function(e) {
