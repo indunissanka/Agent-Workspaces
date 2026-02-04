@@ -710,8 +710,24 @@
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
-
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2>⚙️ General Settings</h2>
+                    </div>
+                    <div class="section-body">
+                        <form id="generalSettingsForm">
+                            <div class="form-group">
+                                <label for="siteTitleInput">Site Title (Logo Text)</label>
+                                <input type="text" class="form-control" id="siteTitleInput" placeholder="Enter site title" value="VideoHub">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+    
+                <div class="toast" id="toast"></div>
     <div class="modal-overlay" id="deleteModal">
         <div class="modal">
             <div class="modal-header">
@@ -762,11 +778,24 @@
             if (e.key === 'Enter') validatePassword();
         });
 
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-            document.getElementById('loginOverlay').classList.add('hidden');
-            document.getElementById('adminContent').classList.add('visible');
-            loadVideos();
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('adminContent').classList.add('visible');
+                loadVideos(); // Load videos after login
+                loadSettings(); // Load general settings after login
+            }
+
+            // Event listener for general settings form
+            const generalSettingsForm = document.getElementById('generalSettingsForm');
+            if (generalSettingsForm) {
+                generalSettingsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveSettings();
+                });
+            }
+        });
+
 
         function loadVideos() {
             const savedVideos = localStorage.getItem('videos');
@@ -776,10 +805,35 @@
                 videos = getDefaultVideos();
                 saveVideos();
             }
-            renderVideoList();
             populateCategoryDropdowns();
+            renderVideoList();
             updateStats();
         }
+
+        // --- General Settings Functions ---
+        function loadSettings() {
+            const siteTitle = localStorage.getItem('siteTitle');
+            if (siteTitle) {
+                document.getElementById('siteTitleInput').value = siteTitle;
+            }
+            // Update the logo in the admin nav as well
+            document.querySelector('.nav-brand h1').textContent = siteTitle || 'VideoHub Admin';
+        }
+
+        function saveSettings() {
+            const siteTitleInput = document.getElementById('siteTitleInput');
+            const newSiteTitle = siteTitleInput.value.trim();
+
+            if (newSiteTitle) {
+                localStorage.setItem('siteTitle', newSiteTitle);
+                showToast('Settings saved successfully!', 'success');
+                // Update the logo in the admin nav immediately
+                document.querySelector('.nav-brand h1').textContent = newSiteTitle;
+            } else {
+                showToast('Site title cannot be empty.', 'error');
+            }
+        }
+        // --- End General Settings Functions ---
 
         function getDefaultVideos() {
             return [
@@ -809,6 +863,31 @@
                 }
             ];
         }
+
+        // --- General Settings Functions ---
+        function loadSettings() {
+            const siteTitle = localStorage.getItem('siteTitle');
+            if (siteTitle) {
+                document.getElementById('siteTitleInput').value = siteTitle;
+            }
+            // Update the logo in the admin nav as well
+            document.querySelector('.nav-brand h1').textContent = siteTitle || 'VideoHub Admin';
+        }
+
+        function saveSettings() {
+            const siteTitleInput = document.getElementById('siteTitleInput');
+            const newSiteTitle = siteTitleInput.value.trim();
+
+            if (newSiteTitle) {
+                localStorage.setItem('siteTitle', newSiteTitle);
+                showToast('Settings saved successfully!', 'success');
+                // Update the logo in the admin nav immediately
+                document.querySelector('.nav-brand h1').textContent = newSiteTitle;
+            } else {
+                showToast('Site title cannot be empty.', 'error');
+            }
+        }
+        // --- End General Settings Functions ---
 
         function saveVideos() {
             localStorage.setItem('videos', JSON.stringify(videos));
@@ -1231,6 +1310,11 @@
 
         document.getElementById('deleteModal').addEventListener('click', function(e) {
             if (e.target === this) closeDeleteModal();
+        });
+
+        document.getElementById('generalSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveSettings();
         });
     </script>
 </body>
