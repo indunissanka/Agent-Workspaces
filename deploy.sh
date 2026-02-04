@@ -70,7 +70,12 @@ fi
 
 # Deploy the Worker
 echo "🚀 Deploying Worker..."
-if [ "$DEPLOY_ENV" = "preview" ]; then
+
+# Use CI configuration if DB_ID is set (for consistency)
+if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
+    echo "🔧 Using CI configuration..."
+    wrangler deploy --config wrangler.ci.toml
+elif [ "$DEPLOY_ENV" = "preview" ]; then
     wrangler deploy --env preview
 else
     wrangler deploy

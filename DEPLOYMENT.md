@@ -114,13 +114,27 @@ wrangler deploy
 
 This error occurs when:
 1. `database_id` is empty or invalid
-2. Environment variable `DB_ID` is not set in CI
+2. Environment variable `DB_ID` is not set
 3. Using wrong configuration file
 
 **Solution:**
 1. **For CI/CD:** Set `DB_ID` environment variable with valid D1 database ID
-2. **For manual deployment:** Replace `REPLACE_WITH_DATABASE_ID` in `wrangler.toml`
+2. **For manual deployment:** Ensure `DB_ID` environment variable is set before running `wrangler deploy`
 3. **For local development:** Use `wrangler dev --local` (uses `preview_database_id = "local"`)
+4. **Quick fix:** Run `./deploy.sh` or `./install-cloudflare.sh` which automatically handles database setup
+
+**Troubleshooting steps:**
+```bash
+# Check if DB_ID is set
+echo $DB_ID
+
+# List existing databases to get ID
+wrangler d1 list
+
+# Set DB_ID manually
+export DB_ID="your-database-id-here"
+wrangler deploy
+```
 
 ## Local Development
 

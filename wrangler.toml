@@ -10,16 +10,16 @@ directory = "./"
 
 # D1 Database Configuration
 # For local development: uses preview_database_id = "local"
-# For production: set DB_ID environment variable or replace with actual database ID
+# For production: set DB_ID environment variable
 [[d1_databases]]
 binding = "DB"
 database_name = "videohub_db"
-database_id = "REPLACE_WITH_DATABASE_ID"  # Replace with actual D1 database ID for production
+database_id = "${DB_ID}"  # Set DB_ID environment variable for production
 preview_database_id = "local"  # Used for wrangler dev --local
 migrations_dir = "migrations"
 
 # To deploy:
 # 1. Create D1 database: wrangler d1 create videohub_db
 # 2. Get database ID from output
-# 3. Replace REPLACE_WITH_DATABASE_ID with actual ID
-# 4. Or set DB_ID environment variable and use database_id = "${DB_ID}"
+# 3. Set DB_ID environment variable with the database ID
+# 4. Deploy: wrangler deploy
