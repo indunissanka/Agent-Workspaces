@@ -1,6 +1,6 @@
 name = "videohub-assets"
-main = "src/worker.js"
 compatibility_date = "2026-02-04"
+main = "src/worker.js"
 
 [assets]
 directory = "./"
@@ -8,4 +8,10 @@ directory = "./"
 [[d1_databases]]
 binding = "DB"
 database_name = "videohub_db"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_id = ""  # Empty string will create database automatically on first deploy
+preview_database_id = "local"  # Use local database for development
+migrations_dir = "migrations"
+
+# For CI/CD environments, you might want to use environment variables
+# database_id = "${DB_ID}"  # Set DB_ID environment variable in CI
+# preview_database_id = "local"
