@@ -84,6 +84,7 @@ print_status "Checking Cloudflare authentication..."
 if [ "$IS_CI" = true ] && [ -n "$CLOUDFLARE_API_TOKEN" ]; then
     print_status "Using CI API token for authentication"
     # Configure wrangler with API token
+    mkdir -p "$HOME/.wrangler/config"
     echo "api_token = \"$CLOUDFLARE_API_TOKEN\"" > "$HOME/.wrangler/config/default.toml"
 elif wrangler whoami &> /dev/null; then
     print_status "Already authenticated with Cloudflare"
