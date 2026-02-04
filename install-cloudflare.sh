@@ -163,7 +163,12 @@ fi
 # Step 5: Update configuration with database ID
 print_status "Updating configuration..."
 
-# Create automated configuration
+# Create automated configuration with actual database ID
+if [ -z "$DB_ID" ]; then
+    print_error "DB_ID is empty. Cannot create configuration."
+    exit 1
+fi
+
 cat > wrangler.automated.toml << EOF
 # Automatically generated configuration for YouTube Video Listing App
 name = "linktube"
@@ -181,7 +186,7 @@ preview_database_id = "local"
 migrations_dir = "migrations"
 EOF
 
-print_status "Created wrangler.automated.toml with database ID"
+print_status "Created wrangler.automated.toml with database ID: $DB_ID"
 
 # Step 6: Apply database migrations
 print_status "Applying database migrations..."
