@@ -41,22 +41,37 @@ migrations_dir = "migrations"
 ### 3. `migrations/0001_initial.sql`
 Contains the database schema and sample data.
 
-### 4. `deploy.sh` (Automated Deployment Script)
-Handles database creation and deployment.
+### 4. `install-cloudflare.sh` (Fully Automated Installation Script)
+Handles complete installation: prerequisites, authentication, database creation, migrations, and deployment. Generates `wrangler.automated.toml` with actual database ID.
+
+### 5. `deploy.sh` (Legacy Deployment Script)
+Simpler script that handles database creation and deployment (still works).
 
 ## Deployment Methods
 
-### Method 1: Automated Script (Recommended)
+### Method 1: Fully Automated Installation (Recommended)
+
+Use the comprehensive `install-cloudflare.sh` script for zero-touch deployment:
 
 ```bash
-chmod +x deploy.sh
-./deploy.sh
+chmod +x install-cloudflare.sh && ./install-cloudflare.sh
 ```
 
-The script:
-1. Checks for existing D1 database or creates new one
-2. Applies migrations
-3. Deploys Worker
+The script handles everything:
+1. **Prerequisites check** - Node.js, npm, Wrangler
+2. **Authentication** - Interactive login or API token
+3. **Database setup** - Creates D1 database if needed
+4. **Migrations** - Applies database schema automatically
+5. **Configuration** - Generates proper `wrangler.automated.toml`
+6. **Deployment** - Deploys Worker and provides live URL
+
+For CI/CD:
+```bash
+export CLOUDFLARE_API_TOKEN="your-token"
+./install-cloudflare.sh
+```
+
+> **Note**: The older `deploy.sh` script is still available but `install-cloudflare.sh` is more comprehensive.
 
 ### Method 2: Manual Deployment
 
@@ -145,14 +160,27 @@ wrangler d1 migrations apply videohub_db --remote
 
 - `wrangler.toml` - Local development configuration
 - `wrangler.ci.toml` - CI/CD configuration (environment variables)
-- `deploy.sh` - Deployment automation script
+- `install-cloudflare.sh` - Fully automated installation script (recommended)
+- `deploy.sh` - Legacy deployment script (still works)
 - `migrations/0001_initial.sql` - Database schema
+- `AUTOMATED_INSTALL.md` - One-command installation guide
 - `DEPLOYMENT.md` - This guide
 
 ## Quick CI Setup
 
+### Option 1: Using install-cloudflare.sh (Recommended)
 ```yaml
 # GitHub Actions example
+- name: Deploy
+  run: |
+    chmod +x install-cloudflare.sh
+    ./install-cloudflare.sh
+  env:
+    CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+```
+
+### Option 2: Manual Wrangler Deployment
+```yaml
 - name: Deploy
   run: |
     npm install -g wrangler

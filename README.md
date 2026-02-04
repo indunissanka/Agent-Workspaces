@@ -33,4 +33,22 @@ You can easily customize the site by:
 - Adding new categories to the filter buttons
 - Replacing placeholder video URLs with actual YouTube embed links
 
+## Deployment to Cloudflare
+
+This app includes a Cloudflare Workers backend with D1 database for persistent video storage.
+
+### Quick Deployment
+Run the automated installation script:
+```bash
+chmod +x install-cloudflare.sh && ./install-cloudflare.sh
+```
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md) and [AUTOMATED_INSTALL.md](AUTOMATED_INSTALL.md).
+
+### Features
+- **Cloudflare Workers**: Serverless backend API
+- **D1 Database**: SQLite-based database for video storage
+- **Assets Binding**: Static files served from Worker
+- **One-command Installation**: Fully automated deployment
+
 Enjoy your video listing site!
