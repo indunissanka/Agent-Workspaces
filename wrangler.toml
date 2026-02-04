@@ -1,0 +1,11 @@
+name = "videohub-assets"
+main = "src/worker.js"
+compatibility_date = "2026-02-04"
+
+[assets]
+directory = "./"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "videohub_db"
+database_id = "REPLACE_WITH_DATABASE_ID"
