@@ -9,14 +9,13 @@ main = "src/worker.js"
 directory = "./"
 
 # D1 Database Configuration for CI
-# Uses environment variable DB_ID for database ID
+# Uses actual database ID for consistency
 [[d1_databases]]
 binding = "DB"
 database_name = "videohub_db"
-database_id = "${DB_ID}"  # Must be set in CI environment
+database_id = "2ea21856-bc8c-46e4-aa5d-ed92feb1bc3c"  # Actual database ID
 preview_database_id = "local"
 migrations_dir = "migrations"
 
 # CI deployment should:
-# 1. Set DB_ID environment variable with D1 database ID
-# 2. Run: wrangler deploy --config wrangler.ci.toml
+# 1. Run: wrangler deploy --config wrangler.ci.toml
