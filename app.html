@@ -128,6 +128,7 @@
             loadData() {
                 const savedVideos = localStorage.getItem('videos');
                 this.state.videos = savedVideos ? JSON.parse(savedVideos) : this.getDefaultVideos();
+                console.log('Videos loaded:', this.state.videos); // Diagnostic log
                 
                 const savedHistory = localStorage.getItem('watchHistory');
                 this.state.watchHistory = savedHistory ? JSON.parse(savedHistory) : {};
@@ -243,6 +244,7 @@
                         video.channel.toLowerCase().includes(query)
                     );
                 }
+                console.log('Filtered videos to render:', filteredVideos); // Diagnostic log
 
                 this.elements.videoGrid.innerHTML = '';
                 filteredVideos.forEach(video => {
