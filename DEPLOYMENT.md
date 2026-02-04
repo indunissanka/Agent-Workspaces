@@ -1,14 +1,14 @@
-# Deployment Guide for YouTube Video Listing App
+# Deployment Guide for YouTube Video Listing App (linktube)
 
-This guide explains how to deploy the YouTube Video Listing app to Cloudflare Workers with automatic D1 database creation.
+This guide explains how to deploy the YouTube Video Listing app to Cloudflare Workers with D1 database automation.
 
 ## Configuration Files
 
 ### 1. `wrangler.toml` (Primary Configuration)
-The `wrangler.toml` file is configured to automatically create the D1 database on first deployment:
+Updated to work with CI/CD and automatic database creation:
 
 ```toml
-name = "videohub-assets"
+name = "linktube"
 compatibility_date = "2026-02-04"
 main = "src/worker.js"
 
@@ -18,7 +18,7 @@ directory = "./"
 [[d1_databases]]
 binding = "DB"
 database_name = "videohub_db"
-database_id = ""  # Empty string = create automatically on first deploy
+database_id = "${DB_ID}"  # Set DB_ID environment variable for deployment
 preview_database_id = "local"  # Use local database for development
 migrations_dir = "migrations"
 ```
@@ -26,42 +26,47 @@ migrations_dir = "migrations"
 ### 2. `migrations/0001_initial.sql`
 Contains the database schema and sample data that will be automatically applied during deployment.
 
-## Deployment Steps
+### 3. `deploy.sh` (Automated Deployment Script)
+Bash script that handles database creation and deployment automatically.
 
-### Prerequisites
+## Deployment Methods
+
+### Method 1: Automated Script (Recommended)
+
+```bash
+# Make script executable
+chmod +x deploy.sh
+
+# Run deployment
+./deploy.sh
+
+# For preview deployment
+./deploy.sh --preview
+```
+
+The script will:
+1. Check if wrangler is installed and logged in
+2. Look for existing D1 database or create a new one
+3. Apply database migrations
+4. Deploy the Worker to Cloudflare
+
+### Method 2: Manual Deployment
+
+#### Prerequisites
 - Cloudflare account with Workers enabled
 - Wrangler CLI installed (`npm install -g wrangler`)
 - Logged in to Cloudflare (`wrangler login`)
 
-### Automatic Deployment (Recommended)
+#### Steps:
 
-1. **Deploy to Cloudflare Workers:**
-   ```bash
-   wrangler deploy
-   ```
-
-   On first deployment:
-   - Wrangler will automatically create a D1 database named `videohub_db`
-   - Apply migrations from `migrations/` folder
-   - Deploy the Worker with assets binding
-
-2. **Verify Deployment:**
-   - Worker URL will be shown in output (e.g., `https://videohub-assets.<your-subdomain>.workers.dev`)
-   - Test API: `https://videohub-assets.<your-subdomain>.workers.dev/api/videos`
-   - Test frontend: Visit the Worker URL in browser
-
-### Manual Database Creation (Alternative)
-
-If automatic creation doesn't work:
-
-1. **Create D1 database manually:**
+1. **Create D1 database (if not exists):**
    ```bash
    wrangler d1 create videohub_db
    ```
 
-2. **Update `wrangler.toml` with the database ID:**
-   ```toml
-   database_id = "<your-database-id>"
+2. **Set database ID as environment variable:**
+   ```bash
+   export DB_ID="your-database-id-here"
    ```
 
 3. **Apply migrations:**
@@ -69,63 +74,84 @@ If automatic creation doesn't work:
    wrangler d1 migrations apply videohub_db --remote
    ```
 
-4. **Deploy:**
+4. **Deploy Worker:**
    ```bash
    wrangler deploy
    ```
 
-## Local Development
+### Method 3: CI/CD Integration
 
-For local development with the same configuration:
+For GitHub Actions, Netlify, or other CI/CD platforms:
 
-```bash
-wrangler dev --local
+1. Set environment variables in CI:
+   - `CLOUDFLARE_API_TOKEN` - Cloudflare API token
+   - `DB_ID` - (Optional) D1 database ID
+
+2. Use the deployment script or run commands directly:
+
+```yaml
+# Example GitHub Actions workflow
+- name: Deploy to Cloudflare Workers
+  run: |
+    npm install -g wrangler
+    ./deploy.sh
+  env:
+    CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 ```
 
-This will:
-- Use `preview_database_id = "local"` (local SQLite database)
-- Serve assets from current directory
-- Apply migrations to local database
+## Local Development
 
-## CI/CD Integration
+```bash
+# Start local development server
+wrangler dev --local
 
-For automated deployments (GitHub Actions, etc.):
+# This will:
+# - Use local SQLite database (preview_database_id = "local")
+# - Serve assets from current directory
+# - Apply migrations to local database
+# - Available at http://localhost:8787
+```
 
-1. Set Cloudflare API token as secret
-2. Use environment variable for database ID:
-   ```toml
-   database_id = "${DB_ID}"
-   ```
-3. In CI, create database and set DB_ID environment variable
+## Verification
+
+After deployment:
+
+1. **Check Worker URL:** Output will show your Worker URL (e.g., `https://linktube.<your-subdomain>.workers.dev`)
+2. **Test API:** `https://linktube.<your-subdomain>.workers.dev/api/videos`
+3. **Test Frontend:** Visit the Worker URL in browser
 
 ## Troubleshooting
 
-### Database Creation Fails
-- Ensure you have D1 database permissions in Cloudflare dashboard
+### Database Creation Fails in CI
+- Ensure `CLOUDFLARE_API_TOKEN` has D1 database permissions
 - Check Wrangler version: `wrangler --version` (should be 4.0+)
+- The `deploy.sh` script includes fallback logic for database creation
+
+### "binding DB of type d1 must have a valid `id` specified"
+- Set `DB_ID` environment variable with valid D1 database ID
+- Or let the deployment script create one automatically
 
 ### Migrations Not Applying
 - Verify `migrations_dir` points to correct folder
 - Check SQL syntax in migration files
 - Run `wrangler d1 migrations list videohub_db --remote` to see applied migrations
 
-### Assets Not Serving
-- Ensure `directory = "./"` includes all static files
-- Check file permissions
-- Verify Worker has assets binding enabled
+### Worker Name Mismatch
+- CI expects Worker name "linktube" (configured in wrangler.toml)
+- If you need a different name, update `name = "linktube"` in wrangler.toml
 
 ## Post-Deployment
 
-1. **Customize Domain:** Add custom domain in Cloudflare dashboard
-2. **Environment Variables:** Set any needed environment variables via `wrangler secret put`
-3. **Monitoring:** Use Cloudflare dashboard to monitor Worker performance and errors
+1. **Custom Domain:** Add custom domain in Cloudflare dashboard
+2. **Environment Variables:** Set secrets via `wrangler secret put`
+3. **Monitoring:** Use Cloudflare dashboard to monitor Worker performance
+4. **Database Management:** Use `wrangler d1` commands to manage your database
 
-## Rollback
+## Files Created
 
-If deployment fails:
-```bash
-wrangler deployments list
-wrangler rollback --version <version-id>
-```
+- `wrangler.toml` - Main configuration (CI-compatible)
+- `migrations/0001_initial.sql` - Database schema
+- `deploy.sh` - Automated deployment script
+- `DEPLOYMENT.md` - This guide
 
 For more details, refer to [Cloudflare Workers documentation](https://developers.cloudflare.com/workers/).
